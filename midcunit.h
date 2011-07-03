@@ -14,8 +14,8 @@
  *   and lets the program proceed to the next test.
  */
 
-/* 'stolen' from the GNU/Linux assert.h header 
- * I changed their __ASSERT_FUNCTION to MIDC_ASSERT_FUNC
+/* Code 'stolen' from the GNU/Linux assert.h header 
+ * I changed their __ASSERT_FUNCTION to MD_ASSERT_FUNC
  * to avoid any conflicts with the library headers.
  */
 # if defined __cplusplus ? __GNUC_PREREQ (2, 6) : __GNUC_PREREQ (2, 4)
@@ -28,7 +28,7 @@
 #  endif
 # endif
 
-#define MD_MAX_LINE 64
+#define MD_MAX_LINE 256
 
 /* Variables for use in the macro functions.
  *   These are 'hidden' in the sense that the user does not need to declare or 
