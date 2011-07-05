@@ -1,0 +1,167 @@
+== Welcome to midcunit, a lightweight C unit-test framework
+
+midcunit is a very lightweight unit testing framework for C.
+It is based on the even lighter-weight testing framework called
+minunit by Jera Design:  http://www.jera.com/techinfo/jtns/jtn002.html.
+
+The name "midcunit" is meant to imply that it is a mid-weight C unit
+testing framework - a little heavier than minunit, but not by much.
+
+== Overview
+
+The entire midcunit framework consists of one header file: midcunit.h
+
+It has four function macros, one MD_MAX_MSG_LEN macro and defines and
+initializes three variables (two int's and a char array of size MD_MAX_MSG_LEN).
+You will only need to concern yourself with the four functions macros
+and to keep your error messages smaller than MD_MAX_MSG_LEN (which is
+256 bytes by default).
+
+You #include "midcunit.h" into a test file and then define three things:
+1. one or more test functions that will call an "md_assert" function (see below)
+2. a function that passes a function pointer to each of your tests to the
+   midcunit function md_run_test()
+3. a main function that calls RUN_TESTS() and passes a function pointer to
+   the method described in step 2 above
+
+Then just compile and run.
+
+Two of the four macro functions are assert functions:
+* The first "md_assert", like assert from <assert.h>, takes only one argument: 
+  the expression to analyze (which evaluates to a C boolean value).
+* The second "md_assertm", like the assert from minunit, takes two arguments:
+  a message to be printed if the test fails and the expression to analyze.
+
+In either case, if the expression is false, midcunit will print the filename,
+line number and the assert that failed.  md_assertm will also print out the
+message you provided.
+
+
+== Rationale
+
+I am not an experienced C developer, so in the process of improving my
+C skills I wanted a unit testing framework that seemed easiest to use:
+I looked at using regular <assert.h> and then Jera's minunit.
+
+What I like about <assert.h> is that it doesn't require a string message,
+which can get tedious to type in - just put in your assert test and if it
+fails it will print out the assert test itself and file and line number, 
+so you can go right to it.  But of course, once it fails it stops everything
+dead in its tracks - you can't run a battery of tests, some of which pass, 
+some of which fail and get a report at the end.
+
+In using minunit, I really liked its lightweight nature and the fact that
+everything is a macro.  However, there were a couple of things I found could
+be improved for my taste:
+1. minunit asserts always require a string message - I'd like that to be
+   optional
+2. minunit asserts have no easy way to print out line number, which I find to
+   the most useful thing in quickly jumping to where test failed.  
+3. when doing multiple tests, minunit stops on the first error and doesn't run
+   the remaining tests - I want it to stop that particular test, but still
+   run the other remaining test functions
+4. the test file you need set up has a lot of boilerplate that I thought could be
+   hidden away in the framework itself
+
+So I built midcunit to combine the best of <assert.h> and minunit.c
+
+I don't claim this framework to be any better or worse than others, mostly
+because the only one I've reviewed is minunit and my C skills are rusty, so
+consider this a tentative contribution to the C community :-)  At least I've
+found it useful for testing simple C programs and libraries.
+
+Feedback on how it could be improved with better functionality or to follow
+C best practices are welcome.  I'd love to learn from your knowledge and
+experience.
+
+== Quick How-To
+
+Example 1:  Bare bones unit test file
+
+Step 1: #include midcunit and define a test method that takes no
+        arguments and returns a char * or 0.  Use the md_assert
+        If the expressions passed to md_assert or md_assertm 
+        evaluate to false, then they will return 
+
+#include "midcunit.h"
+
+int foo = 7;
+
+static char * test_foo() {
+  md_assert(foo == foo);
+  md_assertm("foo should equal 7", foo == 7);
+  return 0;
+}
+
+
+
+Next, create a function that will run all the tests (I usually call it 
+"all_tests") and have it call the midcunit function macro "md_run_test",
+which takes a function pointer
+
+
+== API Documentation
+
+Since the macro functions are not really functions, they don't have a return
+type per se, but they all take arguments.  I use javadoc notation, since I find
+that the most appealing form of function documentation.
+
+/**
+ * If the expression passed in is true, the macro function does nothing. If it
+ * is false, it will stop the test function it is in and create a string defining 
+ * the function, line number and expression that failed.  It will look like:
+ *   test_regexsub_no_match:32: FAILED assert 'strcmp(str,subject) != 0'
+ * 
+ * @param exp - the expression to be evaluated which evaluates to a bool (or int).
+ *              Note: there is no need to #include <stdbool.h> with midcunit.
+ */
+md_assert( bool exp );
+
+
+/**
+ * If the expression passed in is true, the macro function does nothing. If it
+ * is false, it will stop the test function it is in and create a string defining 
+ * the function, line number, the error message passed in and expression that failed.
+ * It will look like:
+ *   test_regexsub_no_match:32: New and orig strings should be different: FAILED \
+ *   assert 'strcmp(str,subject) != 0'
+ * 
+ * @param exp - the expression to be evaluated which evaluates to a bool (or int).
+ *              Note: there is no need to #include <stdbool.h> with midcunit.
+ * @param msg - message to display if the assert fails (is false)
+ */
+md_assertm( const char* msg, bool exp );
+
+
+/**
+ * 
+ * 
+ * 
+ */
+md_run_test( char *(*f)(void) );  //~ check that this is right !!
+
+
+/**
+ * 
+ * 
+ * 
+ */
+RUN_TESTS( void (*f)(void) );
+
+== Status and Possible Limitations
+
+Version 0.1 of midcunit should be considered "alpha" software.  I have been using
+it for a few weeks and it is working great for me, but it has only been used on 
+my dev environment which is:
+
+ os      : Linux 2.6.38-8-generic
+ dist    : Ubuntu 11.04 (Natty Narwhal)
+ compiler: gcc (Ubuntu/Linaro 4.5.2-8ubuntu4) 4.5.2
+ library : glibc 2.13 (ldd (Ubuntu EGLIBC 2.13-0ubuntu13) 2.13)
+
+If others want to start testing it, great!  Let me know if you find problems 
+and/or how it can be made more portable.  One obvious area of concern is the 
+code I stole from the glibc 2.13 assert.h header.  I assume the macro
+___STDC_VERSION__ is defined in the vast majority of environments nowadays,
+but I don't know where important exceptions might be.
+
