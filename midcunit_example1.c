@@ -20,6 +20,6 @@ static void all_tests() {
   md_run_test(test_bar);
 }
 
-int main(int argc, char **argv) {
+int main() {
   RUN_TESTS(all_tests);
 }

@@ -7,18 +7,19 @@ minunit by Jera Design:  http://www.jera.com/techinfo/jtns/jtn002.html.
 The name "midcunit" is meant to imply that it is a mid-weight C unit
 testing framework - a little heavier than minunit, but not by much.
 
+
 == Overview
 
 The entire midcunit framework consists of one header file: midcunit.h
 
 It has four function macros, one MD_MAX_MSG_LEN macro and defines and
 initializes three variables (two int's and a char array of size MD_MAX_MSG_LEN).
-You will only need to concern yourself with the four functions macros
-and to keep your error messages smaller than MD_MAX_MSG_LEN (which is
-256 bytes by default).
+You will only need to concern yourself with the four macro functions
+and to keep your error messages smaller than MD_MAX_MSG_LEN - 100 or so 
+(which means you have about 150 bytes by default).
 
 You #include "midcunit.h" into a test file and then define three things:
-1. one or more test functions that will call an "md_assert" function (see below)
+1. one or more test functions that will call an "md_assert" function
 2. a function that passes a function pointer to each of your tests to the
    midcunit function md_run_test()
 3. a main function that calls RUN_TESTS() and passes a function pointer to
@@ -27,10 +28,10 @@ You #include "midcunit.h" into a test file and then define three things:
 Then just compile and run.
 
 Two of the four macro functions are assert functions:
-* The first "md_assert", like assert from <assert.h>, takes only one argument: 
-  the expression to analyze (which evaluates to a C boolean value).
-* The second "md_assertm", like the assert from minunit, takes two arguments:
-  a message to be printed if the test fails and the expression to analyze.
+* The first, "md_assert", like assert from <assert.h>, takes only one argument: 
+  the expression to evaluate (which evaluates to a C boolean value).
+* The second, "md_assertm", like the assert from minunit, takes two arguments:
+  a message to be printed if the test fails and the expression to evaluate.
 
 In either case, if the expression is false, midcunit will print the filename,
 line number and the assert that failed.  md_assertm will also print out the
@@ -39,9 +40,9 @@ message you provided.
 
 == Rationale
 
-I am not an experienced C developer, so in the process of improving my
-C skills I wanted a unit testing framework that seemed easiest to use:
-I looked at using regular <assert.h> and then Jera's minunit.
+In the process of improving my C skills I wanted a unit testing framework
+that seemed easiest to use: I looked at using regular <assert.h> and then 
+Jera's minunit.
 
 What I like about <assert.h> is that it doesn't require a string message,
 which can get tedious to type in - just put in your assert test and if it
@@ -60,28 +61,34 @@ be improved for my taste:
 3. when doing multiple tests, minunit stops on the first error and doesn't run
    the remaining tests - I want it to stop that particular test, but still
    run the other remaining test functions
-4. the test file you need set up has a lot of boilerplate that I thought could be
-   hidden away in the framework itself
+4. the test file you need set up has a lot of boilerplate much of whicg I thought
+   could be hidden away in the framework itself
 
 So I built midcunit to combine the best of <assert.h> and minunit.c
 
-I don't claim this framework to be any better or worse than others, mostly
-because the only one I've reviewed is minunit and my C skills are rusty, so
-consider this a tentative contribution to the C community :-)  At least I've
-found it useful for testing simple C programs and libraries.
+Feedback on how it could be improved with better functionality or how to better
+follow C best practices are welcome.  I'd love to learn from your knowledge and
+experience, as I'm still learning C.
 
-Feedback on how it could be improved with better functionality or to follow
-C best practices are welcome.  I'd love to learn from your knowledge and
-experience.
 
 == Quick How-To
 
-Example 1:  Bare bones unit test file
+midcunit comes with a few example unit tests, the first is barebones,
+the second depends on another simple C file.
 
-Step 1: #include midcunit and define a test method that takes no
-        arguments and returns a char * or 0.  Use the md_assert
-        If the expressions passed to md_assert or md_assertm 
-        evaluate to false, then they will return 
+To build them, a Makefile is provided.
+
+Type "make" to build the tests and "make test" to run the tests.
+"make help" will show you the targets in the Makefile.
+
+Example:  Create and run a bare bones unit test file
+
+Step 1: #include midcunit and define a test method that takes no arguments
+        and returns a char *.  Have it return 0 at the bottom.  Use the 
+        md_assert or md_assertm functions to test expressions. If an expression
+        passed to md_assert or md_assertm evaluates to false, then it will 
+        prepare a "FAILED assert" message and return it, leaving the current
+        test function where the first assert fails.
 
 #include "midcunit.h"
 
@@ -89,15 +96,67 @@ int foo = 7;
 
 static char * test_foo() {
   md_assert(foo == foo);
-  md_assertm("foo should equal 7", foo == 7);
-  return 0;
+  md_assert(foo == 8);                          /* this will fail */
+  md_assertm("foo should equal 7", foo == 7);   /* this line would not execute */
+  return 0;                           /* 0 would return only if all tests pass */
 }
 
 
+Step 2: Create a function that will run all the tests (I usually call it 
+        "all_tests") and have it call the midcunit macro function "md_run_test",
+        which takes a function pointer to the test methods defined in step 1.
 
-Next, create a function that will run all the tests (I usually call it 
-"all_tests") and have it call the midcunit function macro "md_run_test",
-which takes a function pointer
+static void all_tests() {
+  md_run_test(test_foo);
+  md_run_test(test_bar);
+  md_run_test(test_baz);
+  md_run_test(test_quux);
+}
+
+
+Step 3: Create a main method and call the midcunit macro function RUN_TESTS,
+        which takes a function pointer to the method you defined in step 2.
+
+int main() {
+  RUN_TESTS(all_tests);
+}
+
+
+[Optional additions:]
+You could define a setup() and teardown(), as well as an initial_setup() and
+final_teardown() if you would like.  midcunit does not provide these, but it
+would be simple to add them like this:
+
+static void all_tests() {
+  initial_setup();
+
+  setup();
+  md_run_test(test_foo);
+  teardown();
+
+  setup();
+  md_run_test(test_bar);
+  teardown();
+
+  final_teardown();  /* put a final tear down here, *not* in main after RUN_TESTS.
+                        RUN_TESTS has a return in it, so nothing after it can
+                        be executed  */
+}
+
+If I put a simple puts() statement in setup/teardown method and made the tests
+fail, here is the output I would get:
+$ ./midcunit_example
+ISU: initial setup 
+SU : setup 
+test_stack_foo:14: FAILED assert 'foo == 2'
+TD : teardown
+SU : setup 
+test_stack_bar:19: FAILED assert 'bar == foo'
+TD : teardown
+FTD: final teardown
+2 TESTS FAILED
+Tests run: 2
+
 
 
 == API Documentation
@@ -134,19 +193,33 @@ md_assertm( const char* msg, bool exp );
 
 
 /**
- * 
- * 
- * 
+ * Runs one test function, passed as a function pointer to the macro.
+ * Whenever called md_run_test increments a number of tests counter.
+ * If the test fails, it also increments an internal "fail counter"
+ * and prints out the failure message that is returned by the md_assert
+ *  (or md_assertm) function.
+ *
+ * @param f pointer to a function that takes no arguments and returns char *
+ *          (which is what your test methods should do)
  */
 md_run_test( char *(*f)(void) );  //~ check that this is right !!
 
 
 /**
- * 
- * 
- * 
+ * Calls the function passed in as a function pointer to run all unit tests.
+ * Once all tests have run, it either prints (stdout) "ALL TESTS PASSED" or 
+ * prints the number of tests that failed.  In either case, it also shows the
+ * number of tests that were run.
+ * It returns the number of tests that failed to end the main() method. Thus,
+ * if no tests failed, the return value of the test program itself is 0 (EXIT_SUCCESS)
+ * otherwise it is > 0 (EXIT_FAILURE).
+ *
+ * @param f pointer to a function that takes no arguments and returns nothing,
+ *          which is what your "all_tests" type method should do.
  */
 RUN_TESTS( void (*f)(void) );
+
+
 
 == Status and Possible Limitations
 
@@ -161,7 +234,7 @@ my dev environment which is:
 
 If others want to start testing it, great!  Let me know if you find problems 
 and/or how it can be made more portable.  One obvious area of concern is the 
-code I stole from the glibc 2.13 assert.h header.  I assume the macro
+code I copied from the glibc 2.13 assert.h header.  I assume the macro
 ___STDC_VERSION__ is defined in the vast majority of environments nowadays,
 but I don't know where important exceptions might be.
 
