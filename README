@@ -61,7 +61,7 @@ be improved for my taste:
 3. when doing multiple tests, minunit stops on the first error and doesn't run
    the remaining tests - I want it to stop that particular test, but still
    run the other remaining test functions
-4. the test file you need set up has a lot of boilerplate much of whicg I thought
+4. the test file you need set up has a lot of boilerplate much of which I thought
    could be hidden away in the framework itself
 
 So I built midcunit to combine the best of <assert.h> and minunit.c
@@ -94,7 +94,7 @@ Step 1: #include midcunit and define a test method that takes no arguments
 
 int foo = 7;
 
-static char * test_foo() {
+static char * test_foo(void) {
   md_assert(foo == foo);
   md_assert(foo == 8);                          /* this will fail */
   md_assertm("foo should equal 7", foo == 7);   /* this line would not execute */
@@ -106,7 +106,7 @@ Step 2: Create a function that will run all the tests (I usually call it
         "all_tests") and have it call the midcunit macro function "md_run_test",
         which takes a function pointer to the test methods defined in step 1.
 
-static void all_tests() {
+static void all_tests(void) {
   md_run_test(test_foo);
   md_run_test(test_bar);
   md_run_test(test_baz);
@@ -127,7 +127,7 @@ You could define a setup() and teardown(), as well as an initial_setup() and
 final_teardown() if you would like.  midcunit does not provide these, but it
 would be simple to add them like this:
 
-static void all_tests() {
+static void all_tests(void) {
   initial_setup();
 
   setup();

@@ -10,13 +10,13 @@ static void final_teardown(void);
 
 /* --- TESTS --- */
 
-static char * test_max() {
+static char * test_max(void) {
   md_assert(max(10,20) == 20);    /* will fail */
   md_assert(max(-10,-20) == -10); /* will not execute */
   return 0;
 }
 
-static char * test_min() {
+static char * test_min(void) {
   md_assert(min(10,20) == 10);
   md_assert(min(-10,-20) == -20);
   return 0;
@@ -24,7 +24,7 @@ static char * test_min() {
 
 /* --- RUN ALL TESTS --- */
 
-static void all_tests() {
+static void all_tests(void) {
   initial_setup();
 
   setup();
