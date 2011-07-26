@@ -1,4 +1,7 @@
-== Welcome to midcunit, a lightweight C unit-test framework
+                     ************
+********************** midcunit **********************
+                     ************
+-- Welcome to midcunit, a lightweight C unit-test framework --
 
 midcunit is a very lightweight unit testing framework for C.
 It is based on the even lighter-weight testing framework called
@@ -8,7 +11,7 @@ The name "midcunit" is meant to imply that it is a mid-weight C unit
 testing framework - a little heavier than minunit, but not by much.
 
 
-== Overview
+--[ Overview ]-----------------------------------------------
 
 The entire midcunit framework consists of one header file: midcunit.h
 
@@ -19,26 +22,26 @@ and to keep your error messages smaller than MD_MAX_MSG_LEN - 100 or so
 (which means you have about 150 bytes by default).
 
 You #include "midcunit.h" into a test file and then define three things:
-1. one or more test functions that will call an "md_assert" function
-2. a function that passes a function pointer to each of your tests to the
-   midcunit function md_run_test()
-3. a main function that calls RUN_TESTS() and passes a function pointer to
-   the method described in step 2 above
+ 1. one or more test functions that will call an "md_assert" function
+ 2. a function that passes a function pointer to each of your tests to the
+    midcunit function md_run_test()
+ 3. a main function that calls RUN_TESTS() and passes a function pointer to
+    the method described in step 2 above
 
 Then just compile and run.
 
 Two of the four macro functions are assert functions:
-* The first, "md_assert", like assert from <assert.h>, takes only one argument: 
-  the expression to evaluate (which evaluates to a C boolean value).
-* The second, "md_assertm", like the assert from minunit, takes two arguments:
-  a message to be printed if the test fails and the expression to evaluate.
+ * The first, "md_assert", like assert from <assert.h>, takes only one argument: 
+   the expression to evaluate (which evaluates to a C boolean value).
+ * The second, "md_assertm", like the assert from minunit, takes two arguments:
+   a message to be printed if the test fails and the expression to evaluate.
 
 In either case, if the expression is false, midcunit will print the filename,
 line number and the assert that failed.  md_assertm will also print out the
 message you provided.
 
 
-== Rationale
+--[ Rationale ]---------------------------------------------
 
 In the process of improving my C skills I wanted a unit testing framework
 that seemed easiest to use: I looked at using regular <assert.h> and then 
@@ -54,15 +57,15 @@ some of which fail and get a report at the end.
 In using minunit, I really liked its lightweight nature and the fact that
 everything is a macro.  However, there were a couple of things I found could
 be improved for my taste:
-1. minunit asserts always require a string message - I'd like that to be
-   optional
-2. minunit asserts have no easy way to print out line number, which I find to
-   the most useful thing in quickly jumping to where test failed.  
-3. when doing multiple tests, minunit stops on the first error and doesn't run
-   the remaining tests - I want it to stop that particular test, but still
-   run the other remaining test functions
-4. the test file you need set up has a lot of boilerplate much of which I thought
-   could be hidden away in the framework itself
+ 1. minunit asserts always require a string message - I'd like that to be
+    optional
+ 2. minunit asserts have no easy way to print out line number, which I find to
+    the most useful thing in quickly jumping to where test failed.  
+ 3. when doing multiple tests, minunit stops on the first error and doesn't run
+    the remaining tests - I want it to stop that particular test, but still
+    run the other remaining test functions
+ 4. the test file you need set up has a lot of boilerplate much of which I thought
+    could be hidden away in the framework itself
 
 So I built midcunit to combine the best of <assert.h> and minunit.c
 
@@ -71,7 +74,19 @@ follow C best practices are welcome.  I'd love to learn from your knowledge and
 experience, as I'm still learning C.
 
 
-== Quick How-To
+
+--[ Installation ]-------------------------------------------
+
+Command:  make install
+
+The Makefile provided can be used to install the midcunit.h header file.
+
+By default, the Makefile will install the header in /usr/local/include.
+If you wish to change that, edit the Makefile's HDR_INSTALL_DIR variable
+
+
+
+--[ Quick How-To ]-------------------------------------------
 
 midcunit comes with a few example unit tests, the first is barebones,
 the second depends on another simple C file.
@@ -158,8 +173,7 @@ FTD: final teardown
 Tests run: 2
 
 
-
-== API Documentation
+--[ API Documentation ]-------------------------------------------
 
 Since the macro functions are not really functions, they don't have a return
 type per se, but they all take arguments.  I use javadoc notation, since I find
@@ -221,7 +235,7 @@ RUN_TESTS( void (*f)(void) );
 
 
 
-== Status and Possible Limitations
+--[ Status and Possible Limitations ]----------------------------
 
 Version 0.1 of midcunit should be considered "alpha" software.  I have been using
 it for a few weeks and it is working great for me, but it has only been used on 
@@ -238,3 +252,7 @@ code I copied from the glibc 2.13 assert.h header.  I assume the macro
 ___STDC_VERSION__ is defined in the vast majority of environments nowadays,
 but I don't know where important exceptions might be.
 
+
+-Michael Peterson
+
+https://github.com/midpeter444/midcunit

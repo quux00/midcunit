@@ -1,3 +1,5 @@
+HDR_INSTALL_DIR := /usr/local/include
+
 ex1_NAME := midcunit_example1
 ex2_NAME := midcunit_example2
 
@@ -33,6 +35,9 @@ test: $(ex1_NAME) $(ex2_NAME)
 	./$(ex1_NAME)
 	@ echo "-------------------------------"
 	./$(ex2_NAME)
+
+install:
+	install -m 644 -t $(HDR_INSTALL_DIR) midcunit.h
 
 help:
 	@ echo "== Targets =="
